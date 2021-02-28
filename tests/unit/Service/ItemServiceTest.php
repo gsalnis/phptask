@@ -25,7 +25,7 @@ class ItemServiceTest extends TestCase
     {
         /** @var EntityManagerInterface */
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        
+
         $this->itemService = new ItemService($this->entityManager);
     }
 
@@ -33,7 +33,7 @@ class ItemServiceTest extends TestCase
     {
         /** @var User */
         $user = $this->createMock(User::class);
-        $data = 'secret data';
+        $data = '';
 
         $expectedObject = new Item();
         $expectedObject->setUser($user);

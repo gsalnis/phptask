@@ -21,7 +21,7 @@ class ItemControllerTest extends WebTestCase
         $user = $userRepository->findOneByUsername('john');
 
         $client->loginUser($user);
-        
+
         $data = 'very secure new item data';
 
         $newItemData = ['data' => $data];
@@ -32,6 +32,6 @@ class ItemControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertStringContainsString('very secure new item data', $client->getResponse()->getContent());
 
-        $userRepository->findOneByData($data);
+        $itemRepository->findOneByData($data);
     }
 }

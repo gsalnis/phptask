@@ -24,12 +24,14 @@ class ItemController extends AbstractController
         $items = $this->getDoctrine()->getRepository(Item::class)->findBy(['user' => $this->getUser()]);
 
         $allItems = [];
+
         foreach ($items as $item) {
-            $oneItem['id'] = $item->getId();
-            $oneItem['data'] = $item->getData();
-            $oneItem['created_at'] = $item->getCreatedAt();
-            $oneItem['updated_at'] = $item->getUpdatedAt();
-            $allItems[] = $oneItem;
+            $allItems[] = [
+                'id' => $item->getId(),
+                'data' => $item->getData(),
+                'created_at' => $item->getCreatedAt(),
+                'updated_at' => $item->getUpdatedAt(),
+            ];
         }
 
         return $this->json($allItems);
@@ -38,8 +40,11 @@ class ItemController extends AbstractController
     /**
      * @Route("/item", name="item_create", methods={"POST"})
      * @IsGranted("ROLE_USER")
+     * @param Request $request
+     * @param ItemService $itemService
+     * @return JsonResponse
      */
-    public function create(Request $request, ItemService $itemService)
+    public function create(Request $request, ItemService $itemService): JsonResponse
     {
         $data = $request->get('data');
 
@@ -55,8 +60,10 @@ class ItemController extends AbstractController
     /**
      * @Route("/item/{id}", name="items_delete", methods={"DELETE"})
      * @IsGranted("ROLE_USER")
+     * @param int $id
+     * @return JsonResponse
      */
-    public function delete(Request $request, int $id)
+    public function delete(int $id): JsonResponse
     {
         if (empty($id)) {
             return $this->json(['error' => 'No data parameter'], Response::HTTP_BAD_REQUEST);
@@ -70,6 +77,33 @@ class ItemController extends AbstractController
 
         $manager = $this->getDoctrine()->getManager();
         $manager->remove($item);
+        $manager->flush();
+
+        return $this->json([]);
+    }
+
+    /**
+     * @Route("/item/{id}", name="items_update", methods={"PUT"})
+     * @IsGranted("ROLE_USER")
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function update(int $id): JsonResponse
+    {
+        if (empty($id)) {
+            return $this->json(['error' => 'No data parameter'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $manager = $this->getDoctrine()->getManager();
+        $items = $manager->getRepository(Item::class)->findBy(['user' => $this->getUser()]);
+
+        foreach ($items as $item) {
+            if ($item->getId() === $id) {
+                $item->updatedTimestampsOnUpdate();
+            }
+        }
+
+        $manager->persist($item);
         $manager->flush();
 
         return $this->json([]);
